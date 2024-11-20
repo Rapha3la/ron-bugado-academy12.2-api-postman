@@ -1,25 +1,15 @@
-# Este é um fluxo de trabalho básico para ajudar você a começar com Actions
+name: Teste
 
-name: teste
-
-# Controla quando a ação será executada.
 on:
-  # Aciona o fluxo de trabalho em eventos de push ou pull request, mas somente para o branch principal
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
-
-  # Permite que você execute esse fluxo de trabalho manualmente na guia Actions
+    branches: [main]
   workflow_dispatch:
 
-# Uma execução de fluxo de trabalho é composta por um ou mais jobs que podem ser executados sequencialmente ou em paralelo
 jobs:
   API-Tests-Postman-Collection:
-    # O tipo de runner em que o job será executado
     runs-on: ubuntu-latest
-
-    # Permissões e Ambiente para disponibilizar o Reporte de Testes no GitHub Pages
     permissions:
       contents: read
       pages: write
@@ -29,46 +19,39 @@ jobs:
       name: github-pages
       url: https://Rapha3la.github.io/ron-bugado-academy12.2-api-postman/report.html
 
-    # As etapas representam uma sequência de tarefas que serão executadas como parte do job
     steps:
-      # Etapa 1: Clonar repositório
       - name: Clonar Repositório
         uses: actions/checkout@v4
 
-      # Etapa 2: Verificar versões do Newman e Node.js
       - name: Verificar Versões
         run: |
           newman --version
           node --version
 
-      # Etapa 3: Instalar dependências
       - name: Instalar Newman Reporter
         run: sudo npm install -g newman-reporter-htmlextra
 
-      # Etapa 4: Executar testes com o Newman
       - name: Executar Testes com Newman
         run: newman run ./ronbugado-collecition-ci.json -e ./ronbugado-environments-ci.json --reporters cli,htmlextra --reporter-htmlextra-export ./results/report.html
 
-      # Etapa 5: Salvar relatórios como artefato
-      - name: Salvar Relatórios dos Testes
+      - name: Salvar Relatório dos Testes
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: postman-report
+          name: postman-test-report
           path: ./results/report.html
 
-      # Etapa 6: Configurar GitHub Pages
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
 
-      # Etapa 7: Fazer upload dos relatórios para GitHub Pages
       - name: Fazer Upload dos Relatórios
         uses: actions/upload-pages-artifact@v3
         if: always()
         with:
           path: ./results/
 
-      # Etapa 8: Publicar relatórios no GitHub Pages
       - name: Publicar Relatórios
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: postman-test-report
