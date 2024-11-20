@@ -20,20 +20,27 @@ jobs:
       url: https://Rapha3la.github.io/ron-bugado-academy12.2-api-postman/report.html
 
     steps:
+      # Etapa 1: Clonar Repositório
       - name: Clonar Repositório
         uses: actions/checkout@v4
 
+      # Etapa 2: Verificar Versões do Newman e Node
       - name: Verificar Versões
         run: |
           newman --version
           node --version
 
+      # Etapa 3: Instalar Reporter Htmlextra
       - name: Instalar Newman Reporter
         run: sudo npm install -g newman-reporter-htmlextra
 
+      # Etapa 4: Executar Testes com Newman
       - name: Executar Testes com Newman
-        run: newman run ./ronbugado-collecition-ci.json -e ./ronbugado-environments-ci.json --reporters cli,htmlextra --reporter-htmlextra-export ./results/report.html
+        run: |
+          mkdir -p ./results/
+          newman run ./ronbugado-collecition-ci.json -e ./ronbugado-environments-ci.json --reporters cli,htmlextra --reporter-htmlextra-export ./results/report.html
 
+      # Etapa 5: Salvar Relatórios
       - name: Salvar Relatório dos Testes
         uses: actions/upload-artifact@v4
         if: always()
@@ -41,17 +48,27 @@ jobs:
           name: postman-test-report
           path: ./results/report.html
 
+      # Etapa 6: Configurar GitHub Pages
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
 
+      # Etapa 7: Fazer Upload dos Relatórios
       - name: Fazer Upload dos Relatórios
         uses: actions/upload-pages-artifact@v3
         if: always()
         with:
           path: ./results/
 
+      # Etapa 8: Publicar Relatórios no GitHub Pages
       - name: Publicar Relatórios
         id: deployment
         uses: actions/deploy-pages@v4
         with:
           artifact_name: postman-test-report
+          timeout: 1200000 # Timeout aumentado para 20 minutos
+
+      # Etapa 9: Ativar Logs de Depuração (opcional)
+      - name: Habilitar Logs de Depuração
+        if: always()
+        run: |
+          echo "ACTIONS_STEP_DEBUG=true" >> $GITHUB_ENV
